@@ -11,6 +11,7 @@
     "@apollo/client": "^3.3.11",
     "@heroicons/react": "^1.0.0",
     "@nfte/handler": "^1.0.5",
+    "@silk-wallet/silk-wallet-sdk": "^0.0.21",
     "@tailwindcss/jit": "^0.1.18",
     "@tailwindcss/typography": "^0.4.0",
     "@walletconnect/web3-provider": "^1.6.4",
@@ -59,6 +60,8 @@
     "tls": "^0.0.1",
     "unified": "^9.2.1",
     "unist-util-visit": "^2.0.3",
+    "viem": "^1.19.3",
+    "wagmi": "^1.4.7",
     "web3modal": "^1.9.4"
   },
   "devDependencies": {
