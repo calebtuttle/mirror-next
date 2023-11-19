@@ -1,15 +1,31 @@
 import Link from 'next/link'
 import Head from 'next/head'
 import { initSilk } from '@silk-wallet/silk-wallet-sdk'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import {
+	useAccount,
+	useConnect,
+	useDisconnect,
+	useSendTransaction,
+	usePrepareSendTransaction
+} from 'wagmi'
+import { parseEther } from 'viem'
 import ThemeContext from '@/context/theme'
 
 const Layout = ({ publication, children }) => {
 	if (publication.theme.colorMode === 'DARK' && typeof document !== 'undefined') document.body.classList.add('dark')
 
 	const { connector: activeConnector, isConnected, address } = useAccount()
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
+  const { connect, connectors, error, pendingConnector } = useConnect()
 	const { disconnect } = useDisconnect()
+
+	const { config, error: prepareTxError } = usePrepareSendTransaction({
+    to: process.env.NEXT_PUBLIC_AUTHOR_ENS,
+    value: parseEther('0.01'),
+		onSuccess: () => {
+			alert('Thank you for your donation!')
+		}
+  })
+	const { data, isLoading, isSuccess, sendTransaction } = useSendTransaction(config)
 
 	return (
 		<>
@@ -47,19 +63,38 @@ const Layout = ({ publication, children }) => {
 									</div>
 								</Link>
 								{isConnected && address ? (
-									<div>
-										<p className="text-sm font-medium dark:text-gray-200">{address}</p>
-										<hr />
-										<button 
-											className="float-right text-gray-300 hover:underline font-bold rounded"
-											onClick={() => disconnect()}
-										>
-											Disconnect
-										</button>
-									</div>
+									<>
+										<div>
+											<button 
+												// className="bg-gray-300 text-gray-900 hover:bg-gray-200 font-bold py-2 px-4 rounded-lg"
+												className="bg-blue-100 dark:bg-blue-400 text-blue-500 dark:text-blue-300 ring-blue-100 dark:ring-blue-400 dark:bg-opacity-20 font-medium rounded-lg py-2 px-4 hover:ring-4 dark:ring-opacity-20 transition duration-300 text-base shadow-xs hover:shadow-xs sm:text-lg sm:px-10"
+												onClick={() => {
+													if ((prepareTxError?.message ?? '').includes('insufficient funds')) {
+														alert('You need to have at least 0.01 ETH to donate')
+													} else if (!sendTransaction) {
+														console.error('sendTransaction is not defined')
+													} else {
+														sendTransaction()
+													}
+												}}
+											>
+												Donate
+											</button>
+										</div>
+										<div>
+											<p className="text-sm font-medium dark:text-gray-200">{address}</p>
+											<hr />
+											<button 
+												className="float-right text-gray-300 hover:underline font-bold rounded"
+												onClick={() => disconnect()}
+											>
+												Disconnect
+											</button>
+										</div>
+									</>
 								) : (
 									<button 
-										className="bg-gray-300 text-gray-900 hover:bg-gray-200 font-bold py-2 px-4 rounded"
+										className="bg-gray-300 text-gray-900 hover:bg-gray-200 font-bold py-2 px-4 rounded-lg"
 										onClick={async () => {
 											try {
 												await window.ethereum.login()
